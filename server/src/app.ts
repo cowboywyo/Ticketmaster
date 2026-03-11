@@ -14,6 +14,7 @@ import commentsRoutes from './modules/comments/comments.routes.js';
 import attachmentsRoutes from './modules/attachments/attachments.routes.js';
 import labelsRoutes from './modules/labels/labels.routes.js';
 import activityRoutes from './modules/activity/activity.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/v1/projects/:projectId/labels', labelsRoutes);
 app.use('/api/v1/tickets/:ticketId/comments', commentsRoutes);
 app.use('/api/v1/tickets/:ticketId/attachments', attachmentsRoutes);
 app.use('/api/v1/tickets/:ticketId/activity', activityRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

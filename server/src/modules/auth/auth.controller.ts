@@ -4,13 +4,8 @@ import * as authService from './auth.service.js';
 export async function register(req: Request, res: Response) {
   const { email, password, displayName } = req.body;
   const result = await authService.register(email, password, displayName);
-  res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-  res.status(201).json({ user: result.user, accessToken: result.accessToken });
+  // No tokens — pending approval
+  res.status(201).json({ user: result.user, pendingApproval: true });
 }
 
 export async function login(req: Request, res: Response) {

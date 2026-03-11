@@ -3,6 +3,8 @@ export interface User {
   email: string;
   displayName: string;
   avatarUrl?: string;
+  approved?: boolean;
+  systemRole?: string;
 }
 
 export interface Project {
@@ -66,8 +68,16 @@ export interface Attachment {
   fileSize: number;
   mimeType: string;
   url: string;
+  attachmentType?: 'file' | 'log';
   createdAt: string;
   uploaderName: string;
+}
+
+export interface PendingUser {
+  id: string;
+  email: string;
+  displayName: string;
+  createdAt: string;
 }
 
 export interface ActivityLog {

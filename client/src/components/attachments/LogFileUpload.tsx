@@ -2,25 +2,25 @@ import { useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listAttachments, uploadAttachment, deleteAttachment } from '../../api/attachments';
 import { Button } from '../ui/Button';
-import { Paperclip, Trash2, Upload } from 'lucide-react';
+import { FileText, Trash2, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Attachment } from '../../types';
 
-export function FileUpload({ ticketId }: { ticketId: string }) {
+export function LogFileUpload({ ticketId }: { ticketId: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  const { data: attachments = [] } = useQuery<Attachment[]>({
-    queryKey: ['attachments', ticketId, 'file'],
-    queryFn: () => listAttachments(ticketId, 'file'),
+  const { data: logs = [] } = useQuery<Attachment[]>({
+    queryKey: ['attachments', ticketId, 'log'],
+    queryFn: () => listAttachments(ticketId, 'log'),
   });
 
   const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadAttachment(ticketId, file, 'file'),
+    mutationFn: (file: File) => uploadAttachment(ticketId, file, 'log'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attachments', ticketId] });
       queryClient.invalidateQueries({ queryKey: ['activity', ticketId] });
-      toast.success('File uploaded');
+      toast.success('Log file uploaded');
     },
     onError: () => toast.error('Upload failed'),
   });
@@ -29,7 +29,7 @@ export function FileUpload({ ticketId }: { ticketId: string }) {
     mutationFn: (attachmentId: string) => deleteAttachment(ticketId, attachmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attachments', ticketId] });
-      toast.success('Attachment deleted');
+      toast.success('Log file deleted');
     },
   });
 
@@ -48,8 +48,14 @@ export function FileUpload({ ticketId }: { ticketId: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">Attachments ({attachments.length})</h3>
-        <input ref={fileRef} type="file" className="hidden" onChange={handleFileChange} />
+        <h3 className="text-sm font-semibold text-gray-700">Log Files ({logs.length})</h3>
+        <input
+          ref={fileRef}
+          type="file"
+          className="hidden"
+          accept=".log,.txt,.json,.xml,.csv,.gz,.zip"
+          onChange={handleFileChange}
+        />
         <Button
           size="sm"
           variant="secondary"
@@ -57,25 +63,28 @@ export function FileUpload({ ticketId }: { ticketId: string }) {
           disabled={uploadMutation.isPending}
         >
           <Upload size={14} className="mr-1" />
-          {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
+          {uploadMutation.isPending ? 'Uploading...' : 'Upload Log'}
         </Button>
       </div>
-      {attachments.map((a) => (
-        <div key={a.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+      {logs.length === 0 && (
+        <p className="text-xs text-gray-400">No log files attached</p>
+      )}
+      {logs.map((log) => (
+        <div key={log.id} className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded p-2">
           <div className="flex items-center gap-2">
-            <Paperclip size={14} className="text-gray-400" />
+            <FileText size={14} className="text-amber-600" />
             <a
-              href={a.url}
+              href={log.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-amber-700 hover:underline font-mono"
             >
-              {a.filename}
+              {log.filename}
             </a>
-            <span className="text-xs text-gray-500">{formatSize(a.fileSize)}</span>
+            <span className="text-xs text-gray-500">{formatSize(log.fileSize)}</span>
           </div>
           <button
-            onClick={() => deleteMutation.mutate(a.id)}
+            onClick={() => deleteMutation.mutate(log.id)}
             className="text-gray-400 hover:text-red-600"
           >
             <Trash2 size={14} />

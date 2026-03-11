@@ -126,6 +126,27 @@ async function migrate() {
     console.log('Created: activity_logs');
   }
 
+  // --- Migration 10: Add user approval & system role ---
+  const userCols = await db.raw("PRAGMA table_info('users')");
+  const hasApproved = (userCols as any[]).some((c: any) => c.name === 'approved');
+  if (!hasApproved) {
+    await db.schema.alterTable('users', (t) => {
+      t.boolean('approved').notNullable().defaultTo(false);
+      t.string('system_role', 20).notNullable().defaultTo('user'); // 'root' | 'user'
+    });
+    console.log('Altered: users (added approved, system_role)');
+  }
+
+  // --- Migration 11: Add attachment_type to attachments ---
+  const attachCols = await db.raw("PRAGMA table_info('attachments')");
+  const hasAttachType = (attachCols as any[]).some((c: any) => c.name === 'attachment_type');
+  if (!hasAttachType) {
+    await db.schema.alterTable('attachments', (t) => {
+      t.string('attachment_type', 20).notNullable().defaultTo('file'); // 'file' | 'log'
+    });
+    console.log('Altered: attachments (added attachment_type)');
+  }
+
   console.log('All migrations complete.');
   await db.destroy();
 }

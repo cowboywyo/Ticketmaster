@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import * as attachmentsService from './attachments.service.js';
 
 export async function list(req: Request, res: Response) {
-  const attachments = await attachmentsService.listAttachments(req.params.ticketId as string);
+  const attachmentType = req.query.type as string | undefined;
+  const attachments = await attachmentsService.listAttachments(req.params.ticketId as string, attachmentType);
   res.json({ attachments });
 }
 
@@ -12,7 +13,13 @@ export async function create(req: Request, res: Response) {
     res.status(400).json({ error: { code: 'NO_FILE', message: 'No file uploaded' } });
     return;
   }
-  const attachment = await attachmentsService.createAttachment(req.params.ticketId as string, req.user!.userId, file);
+  const attachmentType = (req.body.attachmentType === 'log' ? 'log' : 'file') as 'file' | 'log';
+  const attachment = await attachmentsService.createAttachment(
+    req.params.ticketId as string,
+    req.user!.userId,
+    file,
+    attachmentType,
+  );
   res.status(201).json({ attachment });
 }
 

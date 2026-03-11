@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { listProjects } from '../../api/projects';
-import { Bug, LayoutDashboard, Plus, Settings, List, Columns3 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { Bug, LayoutDashboard, Plus, Settings, List, Columns3, Shield } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Project } from '../../types';
 
@@ -11,6 +12,7 @@ interface SidebarProps {
 
 export function Sidebar({ onCreateProject }: SidebarProps) {
   const { projectId } = useParams();
+  const { user } = useAuth();
   const { data: projects = [] } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: listProjects });
 
   return (
@@ -28,6 +30,16 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
           <LayoutDashboard size={16} />
           Dashboard
         </Link>
+
+        {user?.systemRole === 'root' && (
+          <Link
+            to="/admin"
+            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-800 text-sm text-purple-400"
+          >
+            <Shield size={16} />
+            Admin
+          </Link>
+        )}
 
         <div className="pt-4">
           <div className="flex items-center justify-between px-3 mb-2">

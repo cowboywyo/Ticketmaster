@@ -3,16 +3,23 @@ import db from '../../db/connection.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { uploadFile, deleteFile } from '../../services/oss.js';
 
-export async function listAttachments(ticketId: string) {
-  return db('attachments')
+export async function listAttachments(ticketId: string, attachmentType?: string) {
+  let query = db('attachments')
     .where({ ticket_id: ticketId })
-    .join('users', 'attachments.uploader_id', 'users.id')
+    .join('users', 'attachments.uploader_id', 'users.id');
+
+  if (attachmentType) {
+    query = query.where('attachments.attachment_type', attachmentType);
+  }
+
+  return query
     .select(
       'attachments.id',
       'attachments.filename',
       'attachments.file_size as fileSize',
       'attachments.mime_type as mimeType',
       'attachments.oss_url as url',
+      'attachments.attachment_type as attachmentType',
       'attachments.created_at as createdAt',
       'users.display_name as uploaderName'
     )
@@ -22,10 +29,12 @@ export async function listAttachments(ticketId: string) {
 export async function createAttachment(
   ticketId: string,
   uploaderId: string,
-  file: { originalname: string; buffer: Buffer; size: number; mimetype: string }
+  file: { originalname: string; buffer: Buffer; size: number; mimetype: string },
+  attachmentType: 'file' | 'log' = 'file'
 ) {
   const id = uuid();
-  const key = `attachments/${ticketId}/${id}-${file.originalname}`;
+  const folder = attachmentType === 'log' ? 'logs' : 'attachments';
+  const key = `${folder}/${ticketId}/${id}-${file.originalname}`;
   const { ossKey, ossUrl } = await uploadFile(file.buffer, key, file.mimetype);
 
   await db('attachments').insert({
@@ -37,17 +46,26 @@ export async function createAttachment(
     mime_type: file.mimetype,
     oss_key: ossKey,
     oss_url: ossUrl,
+    attachment_type: attachmentType,
   });
 
+  const actionName = attachmentType === 'log' ? 'log_uploaded' : 'attachment_added';
   await db('activity_logs').insert({
     id: uuid(),
     ticket_id: ticketId,
     user_id: uploaderId,
-    action: 'attachment_added',
+    action: actionName,
     new_value: file.originalname,
   });
 
-  return { id, filename: file.originalname, fileSize: file.size, mimeType: file.mimetype, url: ossUrl };
+  return {
+    id,
+    filename: file.originalname,
+    fileSize: file.size,
+    mimeType: file.mimetype,
+    url: ossUrl,
+    attachmentType,
+  };
 }
 
 export async function deleteAttachment(attachmentId: string) {

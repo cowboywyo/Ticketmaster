@@ -11,6 +11,7 @@ import { ProjectBoardPage } from './pages/ProjectBoardPage';
 import { ProjectListPage } from './pages/ProjectListPage';
 import { TicketDetailPage } from './pages/TicketDetailPage';
 import { ProjectSettingsPage } from './pages/ProjectSettingsPage';
+import { AdminPage } from './pages/AdminPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/projects/:projectId/list" element={<ProjectListPage />} />
                 <Route path="/projects/:projectId/tickets/:ticketId" element={<TicketDetailPage />} />
                 <Route path="/projects/:projectId/settings" element={<ProjectSettingsPage />} />
+                <Route path="/admin" element={<AdminPage />} />
               </Route>
             </Route>
           </Routes>

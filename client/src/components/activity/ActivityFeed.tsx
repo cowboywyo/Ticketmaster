@@ -13,6 +13,7 @@ const ACTION_LABELS: Record<string, string> = {
   type_change: 'changed type',
   comment_added: 'added a comment',
   attachment_added: 'added an attachment',
+  log_uploaded: 'uploaded a log file',
   label_added: 'added a label',
   label_removed: 'removed a label',
 };

@@ -5,9 +5,8 @@ import { listMembers } from '../api/projects';
 import { listLabels } from '../api/labels';
 import { CommentList } from '../components/comments/CommentList';
 import { FileUpload } from '../components/attachments/FileUpload';
+import { LogFileUpload } from '../components/attachments/LogFileUpload';
 import { ActivityFeed } from '../components/activity/ActivityFeed';
-import { StatusBadge } from '../components/tickets/StatusBadge';
-import { PriorityIcon } from '../components/tickets/PriorityIcon';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
@@ -102,6 +101,10 @@ export function TicketDetailPage() {
 
           <div className="bg-white rounded-lg border p-6">
             <FileUpload ticketId={ticketId!} />
+          </div>
+
+          <div className="bg-white rounded-lg border p-6">
+            <LogFileUpload ticketId={ticketId!} />
           </div>
         </div>
 

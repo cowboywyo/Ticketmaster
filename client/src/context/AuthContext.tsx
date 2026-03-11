@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string) => Promise<{ pendingApproval: boolean }>;
   logout: () => void;
 }
 
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAccessToken(data.accessToken);
         return authApi.getMe();
       })
-      .then((user) => setUser(user))
+      .then((u) => setUser(u))
       .catch(() => setAccessToken(null))
       .finally(() => setLoading(false));
   }, []);
@@ -38,8 +38,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string, displayName: string) => {
     const data = await authApi.register(email, password, displayName);
-    setAccessToken(data.accessToken);
-    setUser(data.user);
+    if (data.pendingApproval) {
+      // No tokens returned — user must wait for root approval
+      return { pendingApproval: true };
+    }
+    // Fallback if approval is ever disabled
+    if (data.accessToken) {
+      setAccessToken(data.accessToken);
+      setUser(data.user);
+    }
+    return { pendingApproval: false };
   };
 
   const logout = () => {
