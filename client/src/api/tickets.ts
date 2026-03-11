@@ -23,3 +23,22 @@ export async function updateTicket(projectId: string, ticketId: string, body: an
 export async function deleteTicket(projectId: string, ticketId: string) {
   await api.delete(`/projects/${projectId}/tickets/${ticketId}`);
 }
+
+// Followers
+export async function getFollowers(ticketId: string) {
+  const { data } = await api.get(`/tickets/${ticketId}/followers`);
+  return data.followers;
+}
+
+export async function getFollowStatus(ticketId: string) {
+  const { data } = await api.get(`/tickets/${ticketId}/followers/me`);
+  return data.following as boolean;
+}
+
+export async function followTicket(ticketId: string) {
+  await api.post(`/tickets/${ticketId}/followers`);
+}
+
+export async function unfollowTicket(ticketId: string) {
+  await api.delete(`/tickets/${ticketId}/followers`);
+}

@@ -80,6 +80,14 @@ export interface PendingUser {
   createdAt: string;
 }
 
+export interface Follower {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  followedAt: string;
+}
+
 export interface ActivityLog {
   id: string;
   action: string;

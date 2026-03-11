@@ -2,6 +2,9 @@ import { v4 as uuid } from 'uuid';
 import db from '../../db/connection.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { PaginationParams, PaginatedResult } from '../../utils/pagination.js';
+import { getAllFollowerEmails } from '../followers/followers.service.js';
+import { sendEmail, buildStatusChangeEmail } from '../../services/email.js';
+import config from '../../config/index.js';
 
 interface CreateTicketData {
   title: string;
@@ -275,6 +278,36 @@ export async function updateTicket(ticketId: string, userId: string, data: Updat
       }
     }
   });
+
+  // Fire-and-forget email notifications for status changes
+  if (data.status !== undefined && data.status !== existing.status) {
+    (async () => {
+      try {
+        const followers = await getAllFollowerEmails(ticketId, userId);
+        if (followers.length === 0) return;
+
+        const ticket = await getTicket(ticketId);
+        const changedByUser = await db('users').where({ id: userId }).select('display_name').first();
+        const ticketKey = `${ticket.projectKey}-${ticket.ticketNumber}`;
+        const ticketUrl = `${config.clientUrl}/projects/${ticket.projectId}/tickets/${ticketId}`;
+
+        const { subject, html } = buildStatusChangeEmail({
+          ticketKey,
+          ticketTitle: ticket.title,
+          oldStatus: existing.status,
+          newStatus: data.status!,
+          changedByName: changedByUser?.display_name || 'Someone',
+          ticketUrl,
+        });
+
+        await Promise.all(
+          followers.map((f) => sendEmail(f.email, subject, html))
+        );
+      } catch (err) {
+        console.error('[Notification error]', err);
+      }
+    })();
+  }
 
   return getTicket(ticketId);
 }

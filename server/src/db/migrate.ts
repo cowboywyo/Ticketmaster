@@ -147,6 +147,17 @@ async function migrate() {
     console.log('Altered: attachments (added attachment_type)');
   }
 
+  // --- Migration 12: Add ticket_followers table ---
+  if (!(await db.schema.hasTable('ticket_followers'))) {
+    await db.schema.createTable('ticket_followers', (t) => {
+      t.string('ticket_id', 36).notNullable().references('id').inTable('tickets').onDelete('CASCADE');
+      t.string('user_id', 36).notNullable().references('id').inTable('users').onDelete('CASCADE');
+      t.timestamp('created_at').notNullable().defaultTo(db.fn.now());
+      t.primary(['ticket_id', 'user_id']);
+    });
+    console.log('Created: ticket_followers');
+  }
+
   console.log('All migrations complete.');
   await db.destroy();
 }

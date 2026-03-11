@@ -7,6 +7,7 @@ import { CommentList } from '../components/comments/CommentList';
 import { FileUpload } from '../components/attachments/FileUpload';
 import { LogFileUpload } from '../components/attachments/LogFileUpload';
 import { ActivityFeed } from '../components/activity/ActivityFeed';
+import { TicketFollowers } from '../components/tickets/TicketFollowers';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
@@ -160,6 +161,10 @@ export function TicketDetailPage() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <TicketFollowers ticketId={ticketId!} />
             </div>
 
             <div className="text-xs text-gray-500 space-y-1 pt-2 border-t">
